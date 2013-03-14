@@ -6,6 +6,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -21,6 +22,7 @@ public class PlayView extends View implements SensorEventListener {
     SensorManager sensor;
     Sensor orient_sensor;
     Hat hat;
+
 
     public Hat getHat() {
         return hat;
@@ -56,7 +58,8 @@ public class PlayView extends View implements SensorEventListener {
     protected void onDraw(Canvas canvas) {
 
         super.onDraw(canvas);
-
+        int screenWidth = this.getWidth();
+        int screenHeight = this.getHeight();
         Paint p = new Paint();
         p.setColor(Color.RED);
 
@@ -67,7 +70,20 @@ public class PlayView extends View implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         //To change body of implemented methods use File | Settings | File Templates.
+
+        float alpha = 0.8f;
+        float[] gravity = {9.8f, 9.8f, 9.8f};
+
+        gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
+        gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
+
+        float linear_acceleration = event.values[0] - gravity[0];
+        //linear_acceleration[1] = event.values[1] - gravity[1];
+        //linear_acceleration[2] = event.values[2] - gravity[2];
+
         hat.setPositionX((int) event.values[2]);
+        Log.e("acc", String.format("%f", event.values[2]));
         this.invalidate();
     }
 
