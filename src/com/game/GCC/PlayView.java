@@ -14,7 +14,7 @@ import android.view.View;
  * Created with IntelliJ IDEA.
  * User: yuyulin
  * Date: 13-3-14
- * Time: 下午9:23
+ * Time: 涓��9:23
  * To change this template use File | Settings | File Templates.
  */
 public class PlayView extends View implements SensorEventListener {
@@ -38,6 +38,11 @@ public class PlayView extends View implements SensorEventListener {
         sensor = (SensorManager)context.getSystemService(context.SENSOR_SERVICE);
         orient_sensor = sensor.getDefaultSensor(Sensor.TYPE_ORIENTATION);
     }
+    
+    public void reDraw(DrawUnit du){
+    	this.invalidate(du.oldRectangle());
+    	this.invalidate(du.newRectangle());
+    }
 
     // sensor
     public void mountSensor(){
@@ -56,6 +61,9 @@ public class PlayView extends View implements SensorEventListener {
 
     @Override
     protected void onDraw(Canvas canvas) {
+    	// coins.each do |c|
+    	//drawBitmap(c.getBitmap, c.newRectangle)
+    	//end
 
         super.onDraw(canvas);
         int screenWidth = this.getWidth();
