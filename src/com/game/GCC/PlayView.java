@@ -29,6 +29,10 @@ public class PlayView extends View {
         super(context);
         play_context = context;
     }
+
+    public void setContext(Context context) {
+        play_context = context;
+    }
     
     private List<DrawUnit> getDrawUnits(){
     	return ((Play)play_context).getDrawUnits();
@@ -36,7 +40,7 @@ public class PlayView extends View {
     }
     
     public void reDraw(DrawUnit du){
-    	//this.invalidate(du.oldRectangle());
+    	this.invalidate(du.oldRectangle());
     	this.invalidate(du.newRectangle());
     }
 
@@ -50,10 +54,13 @@ public class PlayView extends View {
         super.onDraw(canvas);
         Paint p = new Paint();
 
+
         //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
         List<DrawUnit> units = getDrawUnits();
         for (int i = 0; i < units.size(); i ++ ) {
-        	canvas.drawBitmap(units.get(i).getBitmap(), null, units.get(i).newRectangle(), p);
+        	if (units.get(i).isDraw()) {
+                canvas.drawBitmap(units.get(i).getBitmap(), null, units.get(i).newRectangle(), p);
+            }
         }
 
     }

@@ -10,10 +10,11 @@ import android.hardware.*;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.widget.AbsoluteLayout;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.view.View;
+import android.widget.*;
+import common.CoinBitMaps;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,7 +26,7 @@ import android.widget.RelativeLayout;
 public class Play extends Activity implements SensorEventListener{
 
     // 
-	private final static int INTERVAL = 20;
+	private static int INTERVAL = 20;
 	private int counter;
 	
 	private SensorManager sensor;
@@ -36,21 +37,40 @@ public class Play extends Activity implements SensorEventListener{
     private Timer timer;
     private TimerTask timerTask;
     private Handler timerHandler;
+    private int score;
 
     PlayView view;
+    TextView tView;
     
     private void init(){
-        hat = new Hat(300, 300, 50, this);
+        score = 0;
+
+        CoinBitMaps.setHeight(20);
+        CoinBitMaps.setWidth(20);
+        CoinBitMaps.loadCoin(this, R.drawable.coin1);
+
+        hat = new Hat(300, 300, 120, this);
         
         draw_list = new ArrayList<DrawUnit>();
         draw_list.add(hat);
-        
-        view = new PlayView(this);
-        view.setId(1);
 
         LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT, 5);
+
+        //setContentView(R.layout.paly_layout);
+
+        tView = new TextView(this); //(TextView)findViewById(R.id.score_text);
+        tView.setId(2);
+
+        view = new PlayView(this);//(PlayView)findViewById(R.id.play_view);//new PlayView(this);
+       // view.setContext(this);
+        view.setId(1);
+        layout.addView(view, lp);
+        layout.addView(tView,  new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        tView.setText("Score Here");
         setContentView(layout);
-        layout.addView(view);
+
 
         sensor = (SensorManager)getSystemService(this.SENSOR_SERVICE);
         orient_sensor = sensor.getDefaultSensor(Sensor.TYPE_ORIENTATION);
@@ -63,7 +83,7 @@ public class Play extends Activity implements SensorEventListener{
     }
     
     private Coin generateCoin() {
-    	return new Coin((int)(100 + Math.random()*200), 0, 40, this, 20);
+    	return new Coin((int)(100 + Math.random()*200), 0, 80, this, 20);
     }
     
     public List<DrawUnit> getDrawUnits()
@@ -109,10 +129,19 @@ public class Play extends Activity implements SensorEventListener{
         				draw_list.add(generateCoin());
         			}
         			for (int i = 1; i < draw_list.size(); i ++) {
-        				((Coin)draw_list.get(i)).changeStatus();
-        				if (!((Coin)draw_list.get(i)).isDead()) {
-        					view.reDraw(draw_list.get(i));
-        				}
+        				Coin c = ((Coin)draw_list.get(i));
+                        c.changeStatus();
+      				    if (c.checkCollision(getHat().newRectangle())) {
+                            c.collide();
+                            score++;
+                            if (INTERVAL > 5){
+                                INTERVAL = (int) (20/Math.exp(score/100));
+                            }
+
+                            tView.setText( ((Integer)score).toString() );
+                        }
+
+        				view.reDraw(c);
         			}
     				break;
     			}
@@ -140,10 +169,14 @@ public class Play extends Activity implements SensorEventListener{
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		if (timestamp != 0) {
-		  hat.setPositionX(hat.getPositionX() + (int) (event.values[2] * 300 * (event.timestamp - timestamp) / 1000000000));
+		  hat.changeStatus(hat.getPositionX() + (int) (event.values[2] * 300 * (event.timestamp - timestamp) / 1000000000));
 //        Log.e("acc", String.format("%f", event.values[2]));
           view.reDraw(hat);	
 		}
 		timestamp = event.timestamp;
 	}
+
+    public DrawUnit getHat(){
+        return this.draw_list.get(0);
+    }
 }
